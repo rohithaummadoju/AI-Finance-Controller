@@ -4,7 +4,7 @@
 
 An intelligent financial control system that reconciles **Sales, Payments, and Bank transactions**, detects financial exceptions, analyzes discrepancies using **Google Gemini AI**, and maintains an **audit trail** for reconciliation activities.
 
-An AI-powered financial reconciliation and control dashboard built with Python, Streamlit, Pandas, Plotly, and Google Gemini.
+---
 
 ## Overview
 
@@ -17,6 +17,8 @@ AI Finance Controller helps finance teams reconcile financial transactions acros
 The application automatically identifies reconciliation exceptions such as missing transactions, duplicate payments, and amount mismatches.
 
 It also uses Google Gemini to analyze financial exceptions, generate management-level summaries, and answer finance-related questions.
+
+---
 
 ## Key Features
 
@@ -81,6 +83,8 @@ Users can ask questions about the reconciliation results, such as:
 - What is the total financial impact?
 - How many payments are missing?
 - Are there any duplicate payments?
+- Which transactions require manual review?
+- Why is TX010 an exception?
 
 ### 7. Audit Trail
 
@@ -98,6 +102,8 @@ The application records reconciliation runs in an audit log containing:
 
 Reconciliation results can be downloaded as a CSV report.
 
+---
+
 ## Technology Stack
 
 - Python
@@ -108,6 +114,8 @@ Reconciliation results can be downloaded as a CSV report.
 - python-dotenv
 - OpenPyXL
 
+---
+
 ## Project Structure
 
 ```text
@@ -116,6 +124,14 @@ AI-Finance-Controller/
 ├── data/
 │   ├── audit_log.txt
 │   └── reconciliation_report.csv
+│
+├── screenshots/
+│   ├── overview.png
+│   ├── ai-financial-summary.png
+│   ├── ai-risk-actions.png
+│   ├── financial-impact.png
+│   ├── issues-analytics.png
+│   └── ai-exception-analysis.png
 │
 ├── src/
 │   ├── dashboard.py
