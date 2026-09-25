@@ -1,4 +1,8 @@
-# AI Finance Controller
+# 💰 AI Finance Controller
+
+### AI-Powered Financial Reconciliation & Control Dashboard
+
+An intelligent financial control system that reconciles **Sales, Payments, and Bank transactions**, detects financial exceptions, analyzes discrepancies using **Google Gemini AI**, and maintains an **audit trail** for reconciliation activities.
 
 An AI-powered financial reconciliation and control dashboard built with Python, Streamlit, Pandas, Plotly, and Google Gemini.
 
