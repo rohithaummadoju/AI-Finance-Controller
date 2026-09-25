@@ -4,7 +4,7 @@ import plotly.express as px
 import io
 import os
 
-from reconcile import reconcile_data, get_summary
+from reconcile import reconcile_data, get_summary, save_audit_log
 from ai_analyzer import (
     analyze_exception,
     ask_finance_assistant,
@@ -42,24 +42,26 @@ st.markdown(
         margin-bottom: 25px;
     }
 
-    .kpi-card {
+    .kpi-card { 
         padding: 20px;
         border-radius: 12px;
         border: 1px solid #dddddd;
         background: white;
         text-align: center;
         min-height: 120px;
+        color: #000000;
     }
 
     .kpi-title {
         font-size: 14px;
-        color: #666666;
+        color: #333333;
         margin-bottom: 10px;
     }
 
     .kpi-value {
         font-size: 30px;
         font-weight: 700;
+        color: #000000;
     }
 
     .section-title {
@@ -234,6 +236,24 @@ def calculate_quality_score(df, file_type):
     )
 
     return round(score), issues
+def style_exception_status(value):
+    if value == "MATCH":
+        return "color: #198754; font-weight: 700;"
+
+    if value in [
+        "PAYMENT_MISSING",
+        "BANK_MISSING",
+        "DUPLICATE_PAYMENT"
+    ]:
+        return "color: #dc3545; font-weight: 700;"
+
+    if value in [
+        "PAYMENT_AMOUNT_MISMATCH",
+        "BANK_AMOUNT_MISMATCH"
+    ]:
+        return "color: #fd7e14; font-weight: 700;"
+
+    return "color: #000000; font-weight: 700;"
 
 
 # ============================================================
@@ -324,17 +344,48 @@ with tab_upload:
 
         try:
 
-            sales = read_uploaded_file(
-                sales_file
-            )
+            sales = read_uploaded_file(sales_file)
+            payments = read_uploaded_file(payments_file)
+            bank = read_uploaded_file(bank_file)
 
-            payments = read_uploaded_file(
-                payments_file
-            )
 
-            bank = read_uploaded_file(
-                bank_file
-            )
+            # ============================================================
+            # VALIDATE FILE NAMES
+            # ============================================================
+
+            if sales_file is not None:
+                sales_filename = sales_file.name.lower()
+                if "sales" not in sales_filename:
+                    st.error(
+                        "❌ Invalid Sales file.\n\n"
+                        "Please upload the Sales file in the Sales File section."
+                    )
+                    st.stop()
+
+
+            if payments_file is not None:
+                payments_filename = payments_file.name.lower()
+
+                if (
+                    "payment" not in payments_filename
+                    and "payments" not in payments_filename
+                ):
+                    st.error(
+                        "❌ Invalid Payments file.\n\n"
+                        "Please upload the Payments file in the Payments File section."
+                    )
+                    st.stop()
+
+
+            if bank_file is not None:
+                bank_filename = bank_file.name.lower()
+
+                if "bank" not in bank_filename:
+                    st.error(
+                        "❌ Invalid Bank file.\n\n"
+                        "Please upload the Bank file in the Bank File section."
+                    )
+                    st.stop()
 
             st.success(
                 "✅ All three files uploaded successfully."
@@ -490,12 +541,22 @@ with tab_upload:
                 with st.spinner(
                     "Reconciling financial records..."
                 ):
+                    if st.button("🔄 Re-run Reconciliation"):
+                        st.rerun()
 
                     df = reconcile_data(
                         sales,
                         payments,
                         bank
                     )
+                    summary = get_summary(df)
+                    if summary["exception_records"] == 0:
+                        st.success("🟢 Reconciliation completed — No exceptions found.")
+                    elif summary["match_rate"] >= 90:
+                        st.warning("🟡 Reconciliation completed — Minor exceptions detected.")
+                    else:
+                        st.error("🔴 Reconciliation completed — Exceptions require review.")
+                    save_audit_log(summary)
 
                     st.session_state[
                         "reconciliation"
@@ -736,8 +797,20 @@ else:
                 title="Matched vs Exceptions"
             )
 
+            fig_status.update_traces(
+                textinfo="label+percent",
+                textposition="outside",
+                hovertemplate=(
+                    "<b>%{label}</b><br>"
+                    "Transactions: %{value}<br>"
+                    "Share: %{percent}"
+                    "<extra></extra>"
+                )
+            )
+
             fig_status.update_layout(
-                height=400
+                height=400,
+                legend_title_text="Status"
             )
 
             st.plotly_chart(
@@ -770,15 +843,20 @@ else:
 
             fig_discrepancy.update_traces(
                 texttemplate="₹%{text:,.2f}",
-                textposition="outside"
+                textposition="outside",
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    "Amount: ₹%{y:,.2f}"
+                    "<extra></extra>"
+                )
             )
 
             fig_discrepancy.update_layout(
                 height=400,
                 yaxis_title="Amount (₹)",
-                xaxis_title=""
+                xaxis_title="",
+                showlegend=False
             )
-
             st.plotly_chart(
                 fig_discrepancy,
                 use_container_width=True
@@ -791,18 +869,65 @@ else:
         st.markdown(
             "### 💰 Financial Impact"
         )
-
-        f1, f2 = st.columns(2)
-
-        f1.metric(
-            "Payment Discrepancies",
-            f"₹{payment_difference:,.2f}"
+        total_financial_impact = (
+            payment_difference + bank_difference
         )
+        if total_financial_impact == 0:
+            impact_label = "🟢 No Financial Impact"
+        elif total_financial_impact < 1000:
+            impact_label = "🟡 Low Financial Impact"
+        elif total_financial_impact < 10000:
+            impact_label = "🟠 Moderate Financial Impact"
+        else:
+            impact_label = "🔴 High Financial Impact"
 
-        f2.metric(
-            "Bank Discrepancies",
-            f"₹{bank_difference:,.2f}"
-        )
+        st.info(f"Financial Impact Assessment: **{impact_label}**")
+        f1, f2, f3 = st.columns(3)
+
+        with f1:
+            st.markdown(
+                f"""
+                <div class="kpi-card">
+                    <div class="kpi-title">
+                        Payment Discrepancies
+                    </div>
+                    <div class="kpi-value">
+                        ₹{payment_difference:,.2f}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        with f2:
+            st.markdown(
+                f"""
+                <div class="kpi-card">
+                    <div class="kpi-title">
+                        Bank Discrepancies
+                    </div>
+                    <div class="kpi-value">
+                        ₹{bank_difference:,.2f}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        with f3:
+            st.markdown(
+                f"""
+                <div class="kpi-card">
+                    <div class="kpi-title">
+                        Total Financial Impact
+                    </div>
+                    <div class="kpi-value">
+                        ₹{total_financial_impact:,.2f}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         # ----------------------------------------------------
         # Download report
@@ -814,16 +939,29 @@ else:
             "### 📥 Reports"
         )
 
-        csv_data = df.to_csv(
-            index=False
-        ).encode("utf-8")
-
+        csv_data = df.to_csv(index=False).encode("utf-8")
         st.download_button(
-            "⬇️ Download Reconciliation Report",
+            label="📥 Download Reconciliation Report",
             data=csv_data,
             file_name="reconciliation_report.csv",
             mime="text/csv"
         )
+        st.subheader("📋 Audit Trail")
+        audit_file = "data/audit_log.txt"
+        if os.path.exists(audit_file):
+            with open(audit_file, "r", encoding="utf-8") as file:
+                audit_content = file.read()
+
+            if audit_content.strip():
+                st.text_area(
+                    "Reconciliation Audit History",
+                    audit_content,
+                    height=300
+                )
+            else:
+                st.info("No audit records available yet.")
+        else:
+            st.info("No audit records available yet.")
 
         if not exceptions_df.empty:
 
@@ -921,10 +1059,18 @@ else:
                 if column in exceptions_df.columns
             ]
 
-            st.dataframe(
+            styled_exceptions = (
                 exceptions_df[
                     display_columns
-                ],
+                ]
+                .style
+                .map(
+                    style_exception_status,
+                    subset=["status"]
+                )
+            )
+            st.dataframe(
+                styled_exceptions,
                 use_container_width=True,
                 hide_index=True
             )
@@ -1047,8 +1193,13 @@ else:
             - Which transactions have exceptions?
             - What is the match rate?
             - Which transaction has the largest discrepancy?
+            - What is the total financial impact?
+            - How many payments are missing?
+            - How many bank transactions are missing?
+            - Are there any duplicate payments?
+            - Which transactions require manual review?
             - Why is TX010 an exception?
-            - How many transactions require manual review?
+            - Summarize the reconciliation results for management.
             """
         )
 

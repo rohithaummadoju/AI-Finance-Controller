@@ -1,0 +1,171 @@
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 15:50:19
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 15:56:36
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 15:59:19
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 15:59:34
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 15:59:42
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 16:01:42
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 16:03:47
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 16:05:31
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 16:05:36
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+----------------------------------------
+Reconciliation Run
+Time: 2026-09-25 16:08:11
+Total Records: 10
+Matched Records: 6
+Exception Records: 4
+Match Rate: 60.0%
+Payment Discrepancy: ₹100.00
+Bank Discrepancy: ₹150.00
+----------------------------------------
+
+    ----------------------------------------
+    Audit Event: Reconciliation Completed
+    Action: Sales, Payments and Bank records reconciled
+    Time: 2026-09-25 16:09:17
+    Total Records: 10
+    Matched Records: 6
+    Exception Records: 4
+    Match Rate: 60.0%
+    Payment Discrepancy: ₹100.00
+    Bank Discrepancy: ₹150.00
+    ----------------------------------------
+    
+    ----------------------------------------
+    Audit Event: Reconciliation Completed
+    Action: Sales, Payments and Bank records reconciled
+    Time: 2026-09-25 16:31:29
+    Total Records: 10
+    Matched Records: 6
+    Exception Records: 4
+    Match Rate: 60.0%
+    Payment Discrepancy: ₹100.00
+    Bank Discrepancy: ₹150.00
+    ----------------------------------------
+    
+    ----------------------------------------
+    Audit Event: Reconciliation Completed
+    Action: Sales, Payments and Bank records reconciled
+    Time: 2026-09-25 18:14:02
+    Total Records: 9
+    Matched Records: 6
+    Exception Records: 3
+    Match Rate: 66.67%
+    Payment Discrepancy: ₹250.00
+    Bank Discrepancy: ₹150.00
+    ----------------------------------------
+    
+    ----------------------------------------
+    Audit Event: Reconciliation Completed
+    Action: Sales, Payments and Bank records reconciled
+    Time: 2026-09-25 18:20:43
+    Total Records: 10
+    Matched Records: 6
+    Exception Records: 4
+    Match Rate: 60.0%
+    Payment Discrepancy: ₹100.00
+    Bank Discrepancy: ₹150.00
+    ----------------------------------------
+    
+    ----------------------------------------
+    Audit Event: Reconciliation Completed
+    Action: Sales, Payments and Bank records reconciled
+    Time: 2026-09-25 18:39:17
+    Total Records: 1000
+    Matched Records: 920
+    Exception Records: 80
+    Match Rate: 92.0%
+    Payment Discrepancy: ₹4,150.00
+    Bank Discrepancy: ₹4,000.00
+    ----------------------------------------
+    

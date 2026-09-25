@@ -181,3 +181,30 @@ def get_summary(df):
         "payment_discrepancy": round(payment_discrepancy, 2),
         "bank_discrepancy": round(bank_discrepancy, 2)
     }
+from datetime import datetime
+import os
+
+
+def save_audit_log(summary):
+    os.makedirs("data", exist_ok=True)
+
+    log_file = "data/audit_log.txt"
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    log_entry = f"""
+    ----------------------------------------
+    Audit Event: Reconciliation Completed
+    Action: Sales, Payments and Bank records reconciled
+    Time: {timestamp}
+    Total Records: {summary['total_records']}
+    Matched Records: {summary['matched_records']}
+    Exception Records: {summary['exception_records']}
+    Match Rate: {summary['match_rate']}%
+    Payment Discrepancy: ₹{summary['payment_discrepancy']:,.2f}
+    Bank Discrepancy: ₹{summary['bank_discrepancy']:,.2f}
+    ----------------------------------------
+    """
+
+    with open(log_file, "a", encoding="utf-8") as file:
+        file.write(log_entry)
