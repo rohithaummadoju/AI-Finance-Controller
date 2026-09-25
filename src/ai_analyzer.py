@@ -32,24 +32,27 @@ else:
 # ============================================================
 
 def generate_with_retry(prompt):
-
+    
     if client is None:
         return None, (
             "❌ GEMINI_API_KEY was not found.\n\n"
             "Please check your .env file."
         )
 
-    max_attempts = 3
+    max_attempts = 2
 
     for attempt in range(max_attempts):
 
         try:
 
             response = client.models.generate_content(
-                model="gemini-3.6-flash",
+                model="gemini-3.5-flash-lite",
                 contents=prompt,
                 config={
-                    "tools": []
+                    "tools": [],
+                    "thinking_config": {
+            "thinking_level": "minimal"
+        }
                 }
             )
 
@@ -67,7 +70,7 @@ def generate_with_retry(prompt):
 
                 if attempt < max_attempts - 1:
 
-                    wait_time = 5 * (2 ** attempt)
+                    wait_time = 3
 
                     time.sleep(
                         wait_time
@@ -78,7 +81,9 @@ def generate_with_retry(prompt):
                 return None, (
                     "❌ Gemini is temporarily unavailable "
                     "because the model is experiencing high demand.\n\n"
-                    "Please try again in a few moments."
+                    "The application automatically retried "
+                    "the request several times. Please try again "
+                    "after a short while."
                 )
 
             # ------------------------------------------------
@@ -127,7 +132,6 @@ def generate_with_retry(prompt):
     return None, (
         "❌ Gemini request failed after multiple attempts."
     )
-
 
 # ============================================================
 # ANALYZE ONE FINANCIAL EXCEPTION
@@ -285,7 +289,27 @@ LOW
 MEDIUM
 HIGH
 
-Briefly explain the priority.
+Use the following data-based guidance:
+
+- HIGH:
+  Missing financial records, duplicate payments,
+  or significant financial discrepancies that require
+  prompt investigation.
+
+- MEDIUM:
+  Amount mismatches or other discrepancies that have
+  a measurable financial impact but do not indicate
+  a missing financial record.
+
+- LOW:
+  Minor discrepancies with limited financial impact.
+
+Briefly explain why the selected priority applies
+to this specific transaction.
+
+Do not assign priority based on assumptions about
+the business. Use the transaction's actual status
+and financial differences.
 
 Important rules:
 
@@ -373,6 +397,11 @@ def generate_finance_summary(reconciliation_df):
         .sum()
     )
 
+    total_financial_impact = (
+        payment_discrepancy
+        + bank_discrepancy
+    )
+
     # --------------------------------------------------------
     # Exception breakdown
     # --------------------------------------------------------
@@ -441,8 +470,9 @@ def generate_finance_summary(reconciliation_df):
     prompt = f"""
 You are an experienced AI Finance Controller.
 
-Prepare a concise management-level financial
-reconciliation summary using ONLY the data provided.
+Prepare a concise, professional management-level
+financial reconciliation summary using ONLY the
+data provided below.
 
 ==================================================
 RECONCILIATION OVERVIEW
@@ -466,6 +496,9 @@ Payment Discrepancy:
 Bank Discrepancy:
 ₹{bank_discrepancy:,.2f}
 
+Total Financial Impact:
+₹{total_financial_impact:,.2f}
+
 
 ==================================================
 EXCEPTION BREAKDOWN
@@ -482,22 +515,42 @@ TOP FINANCIAL IMPACT TRANSACTIONS
 
 
 ==================================================
-REQUIRED OUTPUT
+REQUIRED OUTPUT FORMAT
 ==================================================
 
-### Executive Summary
+### 📊 Executive Summary
 
-Give a short overview of the reconciliation health.
+Provide a short management-level overview of the
+reconciliation results.
 
-### Key Findings
+Mention:
 
-List the most important confirmed findings.
+- Total records
+- Match rate
+- Number of exceptions
+- Overall financial impact
 
-### Financial Impact
 
-Explain the financial discrepancies.
+### 🔎 Key Findings
 
-### Risk Assessment
+List the most important confirmed findings from
+the reconciliation data.
+
+Use bullet points.
+
+
+### 💰 Financial Impact
+
+Clearly explain:
+
+- Payment discrepancy amount
+- Bank discrepancy amount
+- Total financial impact
+
+Use the exact amounts provided.
+
+
+### 🚨 Risk Assessment
 
 Classify the overall reconciliation risk as:
 
@@ -505,27 +558,65 @@ LOW
 MEDIUM
 HIGH
 
-Explain why.
+Then briefly explain the classification using
+only the available financial data.
 
-### Recommended Actions
+Do not invent business risks that are not supported
+by the data.
 
-Give practical actions the finance team should take.
 
-### Management Attention
+### ✅ Recommended Actions
 
-State whether immediate management attention
-is recommended.
+Provide practical actions for the finance team.
+
+Prioritize:
+
+1. Missing transactions
+2. Amount mismatches
+3. Duplicate payments
+4. High-impact exceptions
+
+Do not claim that an issue has been resolved unless
+the data confirms it.
+
+
+### 📌 Management Attention
+
+State whether the reconciliation contains items
+that require management review.
+
+Explain the reason using the actual data.
+
 
 ==================================================
 IMPORTANT RULES
 ==================================================
 
-1. Use ONLY the provided data.
+1. Use ONLY the provided reconciliation data.
+
 2. Do not invent transactions.
+
 3. Do not invent financial amounts.
-4. Clearly distinguish confirmed facts from possible causes.
-5. Do not modify any financial records.
-6. Keep the response concise and professional.
+
+4. Do not invent causes.
+
+5. Clearly distinguish confirmed findings from
+   possible explanations.
+
+6. Possible causes must be explicitly described as
+   possible, not confirmed.
+
+7. Use the exact financial amounts provided.
+
+8. Do not modify financial records.
+
+9. Keep the response concise and professional.
+
+10. Write for a finance manager reviewing the
+    reconciliation results.
+
+11. Do not provide generic financial advice unrelated
+    to the reconciliation data.
 """
 
     # --------------------------------------------------------
@@ -537,7 +628,6 @@ IMPORTANT RULES
     )
 
     if error:
-
         return error
 
     return answer
@@ -607,20 +697,14 @@ def ask_finance_assistant(
         total_records - matched
     )
 
-    if total_records > 0:
-
-        match_rate = (
-            matched /
-            total_records *
-            100
-        )
-
-    else:
-
-        match_rate = 0
+    match_rate = (
+        matched / total_records * 100
+        if total_records > 0
+        else 0
+    )
 
     # --------------------------------------------------------
-    # Prepare data for Gemini
+    # Prepare reconciliation data
     # --------------------------------------------------------
 
     data_for_ai = (
@@ -684,7 +768,8 @@ IMPORTANT RULES
 
 4. If information is missing, clearly say it is missing.
 
-5. Clearly distinguish confirmed facts from possible causes.
+5. Clearly distinguish confirmed facts from possible
+   explanations.
 
 6. If the question asks about a transaction, use the
    actual values from the dataset.
@@ -712,7 +797,6 @@ IMPORTANT RULES
     )
 
     if error:
-
         return error
 
     return answer
